@@ -4,6 +4,10 @@
 # install.packages("paramlink")
 
 ## Set up the environment
+# If on the biocompace HPC server, load the R module
+# 'module load R/3.6.3'
+# Start an R interactive session:
+# 'R'
 # Load paramlink
 library(paramlink)
 
@@ -12,20 +16,23 @@ setwd("~/Projects/Seminars/ACE_Uganda/Paramlink")  # Modify this to match the lo
 
 # Check for merlin
 system("which merlin")
-  # /opt/anaconda3/bin/merlin
+  # /Users/oleraj/anaconda3/bin/merlin
 # If you don't see merlin but you have it installed, then run these steps:
 system("echo $PATH")
 # I see this:
   # /usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin
 # Modify this command below to prepend your path to merlin.  
-# In my case merlin is installed in '/opt/anaconda3/bin'.
+# In my case merlin is installed in '/Users/oleraj/anaconda3/bin'.
 # If you don't know where merlin is installed, open a terminal, 
-# type 'which merlin'.  You may need to start with 'conda activate' 
-# before typing 'which merlin'
-Sys.setenv(PATH="/opt/anaconda3/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin") 
-Sys.setenv(PATH="/opt/anaconda3/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin")
+# type 'which merlin'.  
+# If you installed merlin on the biocompace HPC, you may need to initiate conda 
+# for your terminal with 'eval "$(conda shell.bash hook)" '
+Sys.setenv(PATH="/Users/oleraj/anaconda3/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin") 
 system("which merlin")
-
+# If you are using the biocompace HPC server, you can load merlin by loading the
+# anaconda module: 'module load anaconda3-2019.10-gcc-9.3.0-7gh72na'
+system("which merlin")
+  # /opt/ohpc/admin/spack/0.15.0/opt/spack/linux-centos8-sandybridge/gcc-9.3.0/anaconda3-2019.10-7gh72nae2c5prph4unxinmialubphorl/bin/merlin
 
 
 
@@ -40,7 +47,7 @@ plot(p1)
 p1 <- swapAff(p1, 3)
 plot(p1)  
 # Add SNP markers where parents are HET and child is homozygous for one allele
-m <- marker(p1, c(1, 2), c("G", "T"), 3, c("G", "G"))
+m <- marker(p1, c(1, 2), c("G", "T"), 3, c("G", "G"), name="gene", chrom="1", pos="30")
 p1 <- addMarker(p1, m)
 plot(p1, marker=1)
 # If you want to save an image of the file, run these commands below
@@ -66,7 +73,7 @@ p2
 plot(p2, marker = c(1,2))
 
 # Save as PDF
-pdf("comp_het.pdf", height=3, width=3)
+pdf("comp_het.pdf", height=4, width=3)
 plot(p2, marker= c(1,2))
 dev.off()
 
@@ -98,15 +105,14 @@ pdf("X_rec.pdf", height=3, width=3)
 plot(p4, marker= 1)
 dev.off()
 
-# See here for more complicated examples (multi-generational, multiple affected statuses, etc.): http://folk.uio.no/magnusv/LinkageCourse/Paramlink/paramlink_intro.pdf
-
+# See here for more complicated examples (multi-generational [addParents], multiple affected statuses, etc.): https://web.archive.org/web/20170420081914/http://folk.uio.no/magnusv/LinkageCourse/Paramlink/paramlink_intro.pdf 
 
 
 
 
 
 #### 2. Power analysis  ####
-# Adapted from http://folk.uio.no/magnusv/LinkageCourse/Paramlink/paramlink_power.pdf
+# Adapted from https://web.archive.org/web/20170420081924/http://folk.uio.no/magnusv/LinkageCourse/Paramlink/paramlink_power.pdf
 
 # Power estimation is done by simulating markers that are completely linked to the disease locus.
 # Singlepoint LOD scores of these markers are then computed, and the maximum score is reported.
@@ -122,7 +128,8 @@ plot(x)
 # 3 = X-linked dominant
 # 4 = X-linked recessive
 # Or you can manually set parameters, e.g., 
-# setModel(x, chrom="autosomal", penetrances=c(0.01, 0.9, 0.9), dfreq=0.005)
+# setModel(x, chrom="autosomal", penetrances=c(0.01, 0.9, 1.0), dfreq=0.005)
+# penetrances: likelihood of getting disease with 1) 0 alleles (phenocopy), 2) 1 allele, 3) 2 alleles
 x = setModel(x, model=1)  # dominant model, default parameters
 
 set.seed(1234)
@@ -140,6 +147,7 @@ linkage.power(x, available=c(1, 3:8), N=500)
 
 # As you can see, this reduces the Max LOD score to 1.0.  
 # Missing information from grandma hurts the analysis.
+# You can use this to determine which samples are most important to include
 
 # What if we simulate using markers that are triallelic instead of biallelic?
 linkage.power(x, available=c(1, 3:8), afreq=c(0.3, 0.3, 0.4), N=500)
@@ -187,7 +195,7 @@ linkage.power(p5, N=500)
 
 
 #### 3. Computing LOD scores and Merlin wrapper  ####
-# Exercises adapted from http://folk.uio.no/magnusv/LinkageCourse/Paramlink/paramlink_merlin.pdf
+# Exercises adapted from https://web.archive.org/web/20170408144024/http://folk.uio.no/magnusv/LinkageCourse/Paramlink/paramlink_merlin.pdf
 
 # First check to see if paramlink recognizes merlin
 x = linkdat("toy_example.ped", model=1)
@@ -200,30 +208,32 @@ lod(x)
 # two-point linkage (paramlink) to multipoint linkage analysis (MERLIN)
 y = linkdat(dominant, model=1)
 y  # Inspect the PED file data we loaded
-plot(y, available=TRUE)
+plot(y, available=TRUE)  # available = TRUE marks in red the ones for which we have data
 # What is our theoretical Max LOD for this pedigree?
-linkage.power(y, N=500)  # 3.6
+linkage.power(y, N=500)  
+# 3.6
 
 # Merlin is slow with more than about 16 individuals, so let's subset to only 
-# include affected individuals 
+# include affected individuals (and important unaffected)
 y_aff = trim(y, keep="affected")
 summary(y_aff)
 plot(y_aff, available=TRUE)
 # Theoretical Max LOD now?
-linkage.power(y_aff, N=500) # 2.01
+linkage.power(y_aff, N=500) 
+# 2.01
 
 
 # Remove Mendelian errors
-mendelianCheck(y_aff)   # 5 markers with Mendelian errors
+mendelianCheck(y_aff)   # 5 markers with Mendelian errors.  Inspect these manually in the raw data and/or remove. 
 y_aff = mendelianCheck(y_aff, remove=TRUE)
 mendelianCheck(y_aff)   # None, they were removed.
 
 # Compute LOD scores with two-point linkage
 single_lods = lod(y_aff)
-# Now get multipoint linkage LOD scores
+# Now get multipoint linkage LOD scores (combine nearby markers, like a haplotype)
 multi_lods = merlin(y_aff)
 
-dev.off()
+#dev.off()
 plot(single_lods, lty=3) # lty=3 gives dashed line
 par(new=T) # prepares R for a new plot in the same window
 plot(multi_lods, col="blue") # the 'col' argument specifies line color
@@ -236,6 +246,8 @@ summary(multi_lods)
 lod.peaks(multi_lods, threshold=2.4)
 # Plot the pedigree with peak marker genotypes
 plot(y, marker=313)  # Use 313 as representative
+
+# Anything odd showing up? Any potentially problematic samples?
 
 pdf("toy_ped_peak_marker_genotypes.pdf", width=4, height=7)
 plot(y, marker=c(313, 314, 315, 316))
@@ -309,3 +321,9 @@ abline(h=0, col="black")
 # suggesting that if this is a real peak that some of the unaffected individuals 
 # carry the disease allele.  Note that with 100% penetrance, the large peak is flat-lined.
 
+
+# For running multiple families,
+# 1) with Paramlink, you can save data for each family as an array (per chromosome)
+#    and merge the data across families
+# 2) OR (recommended) use Merlin natively in the terminal, which can handle multi-  
+#    family PED files. http://csg.sph.umich.edu/abecasis/merlin/tour/parametric.html
