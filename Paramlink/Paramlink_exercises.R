@@ -129,7 +129,7 @@ plot(x)
 # 4 = X-linked recessive
 # Or you can manually set parameters, e.g., 
 # setModel(x, chrom="autosomal", penetrances=c(0.01, 0.9, 1.0), dfreq=0.005)
-# penetrances: likelihood of getting disease with 1) 0 alleles (phenocopy), 2) 1 allele, 3) 2 alleles
+# penetrances: likelihood of getting disease with 1) 0 alleles (phenocopy), 2) 1 alternate allele, 3) 2 alternate alleles
 x = setModel(x, model=1)  # dominant model, default parameters
 
 set.seed(1234)
@@ -165,7 +165,7 @@ linkage.power(x80)
 # Unaffected individuals are allowed to be carriers so it's harder to 
 # trace the disease allele.
 
-x60 = setModel(x, penetrances=c(0, 0.6, 1))  # dominant with 80% penetrance for Heterozygotes (HET)
+x60 = setModel(x, penetrances=c(0, 0.6, 1))  # dominant with 60% penetrance for Heterozygotes (HET)
 linkage.power(x60)
 
 # Max LOD score is reduced further, 1.058.  
@@ -233,7 +233,6 @@ single_lods = lod(y_aff)
 # Now get multipoint linkage LOD scores (combine nearby markers, like a haplotype)
 multi_lods = merlin(y_aff)
 
-#dev.off()
 plot(single_lods, lty=3) # lty=3 gives dashed line
 par(new=T) # prepares R for a new plot in the same window
 plot(multi_lods, col="blue") # the 'col' argument specifies line color
@@ -263,7 +262,6 @@ m_lods80 = merlin(y80)
 m_lods60 = merlin(y60)
 
 # Plot results for all different penetrance values together
-dev.off()
 plot(m_lods100, col="green")
 par(new=TRUE) # new plot in the same window
 plot(m_lods80, col="red")
@@ -291,7 +289,7 @@ mendelianCheck(z)   # 6 Mendelian errors
 z = mendelianCheck(z, remove=TRUE)
 mendelianCheck(z)   # None, they were removed.
 m_lods = merlin(z)
-dev.off()
+
 plot(m_lods)
 summary(m_lods)
 lod.peaks(m_lods, threshold=1)
@@ -317,7 +315,7 @@ abline(h=0, col="black")
 
 # Note that normally when you reduce the penetrance, the LOD score decreases
 # For the smaller peaks that is the case.
-# However for the tall peak, the LOD score increases with higher penetrance, 
+# However for the tall peak, the LOD score increases with lower penetrance, 
 # suggesting that if this is a real peak that some of the unaffected individuals 
 # carry the disease allele.  Note that with 100% penetrance, the large peak is flat-lined.
 
