@@ -1,2 +1,2 @@
 # Genetic-Linkage-Analysis
-Materials for ACE 2020 course on Genetic Linkage Analysis taught in Spring 2020.
+Materials for ACE 2021 course on Genetic Linkage Analysis taught in November 2021.
